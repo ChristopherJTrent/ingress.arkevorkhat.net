@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Role {
+  id Int @id @default(autoincrement())
+
+  routes Route[]
+  users User[]
+}
+
+model ApiKey {
+  id Int @id @default(autoincrement())
+  keyText String @unique
+  created_at DateTime @default(now())
+  expires_at DateTime
+  owner User @relation(fields: [ownerId], references: [id])
+  ownerId Int
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  username String @unique
+  password_hash String
+  roles Role[]
+  apiKeys ApiKey[]
+}
+
+model Service {
+  id Int @id @default(autoincrement())
+  path String @unique
+  routes Route[]
+}
+
+model Route {
+  id Int @id @default(autoincrement())
+  path String @unique
+  allowedRoles Role[]
+  service Service @relation(fields: [serviceid], references: [id])
+  serviceid Int
+}
