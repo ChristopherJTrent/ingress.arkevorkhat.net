@@ -1,0 +1,5 @@
+{
+	"yaml.schemas": {
+		"https://www.schemastore.org/openapi-3.X.json": "file:///c%3A/Users/Chris/source/typescript/ingress.arkevorkhat.net/src/api/ingress.yaml"
+	}
+}

@@ -1,0 +1,25 @@
+openapi: 3.0.4
+info:
+  title: https://ingress.arkevorkhat.net/admin/v1
+  version: 0.0.1
+paths:
+  /roles:
+    get:
+      summary: Authorization Roles
+      description: returns a JSON object detailing all of the authorization roles supported by the server.
+      responses:
+        "200":
+          description: authorization info
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: the fully qualified name of the role
+                    description:
+                      type: string
+                      description: a description of the role's intended use case
