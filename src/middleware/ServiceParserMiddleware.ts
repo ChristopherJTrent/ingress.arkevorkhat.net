@@ -1,8 +1,6 @@
 import type {  Request, Response, NextFunction } from "express";
-import { Router } from "express";
-Router().use((a, b, c) => {})
 
-export function ServiceRouterMiddleware(req: Request, res: Response, next: NextFunction) {
+export function ServiceParserMiddleware(req: Request, res: Response, next: NextFunction) {
     if(req.path.startsWith("/admin")) {
         next()
     } else {
@@ -12,6 +10,10 @@ export function ServiceRouterMiddleware(req: Request, res: Response, next: NextF
             return
         }
         req.serviceName = segments[0]
-        req.serviceRequestPath = segments.slice(1).join("/")
+		if (segments.length == 1) {
+			req.serviceRequestPath = "/"
+		} else {
+			req.serviceRequestPath = segments.slice(1).join("/")
+		}
     }
 }
