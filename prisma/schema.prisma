@@ -46,6 +46,7 @@ model Service {
 model Route {
   id Int @id @default(autoincrement())
   path String @unique
+  allowAllRequests Boolean
   allowedRoles Role[]
   service Service @relation(fields: [serviceid], references: [id])
   serviceid Int
