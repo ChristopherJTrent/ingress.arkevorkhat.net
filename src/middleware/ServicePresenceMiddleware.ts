@@ -29,8 +29,8 @@ export async function ServicePresenceMiddleware(req: Request, res: Response, nex
 	else {
 		const matched = service.routes
 			.filter((v) => matchRoute(v.path, sanitizeRequestPath(req.serviceRequestPath)))
-			.length > 0
-		if (matched) {
+		if (matched.length > 0) {
+			req.routeObject = matched[0]!;
 			next()
 			return
 		}
