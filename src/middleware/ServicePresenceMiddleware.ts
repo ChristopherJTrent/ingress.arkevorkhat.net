@@ -1,8 +1,9 @@
 import type { Response, Request, NextFunction } from 'express';
 import {prisma} from '../common/prisma'
 import { matchRoute } from '../common/RouteMatcher';
+import type { Optional } from '../common/Optional';
 
-function sanitizeRequestPath(requestPath: string | null): string {
+function sanitizeRequestPath(requestPath: Optional<string>): string {
 	if (/\?.*\//.exec(requestPath??"") != null) {
 		throw "Illegal Argument, a slash cannot follow a question mark"
 	}
@@ -20,11 +21,15 @@ export async function ServicePresenceMiddleware(req: Request, res: Response, nex
 			name: req.serviceName
 		},
 		include: {
-			routes: true
+			routes: {
+				include: {
+					allowedRoles: true
+				}
+			}
 		}
 	})
 	if (service == undefined) {
-		res.status(404).end()
+		res.status(404).end().send()
 	}
 	else {
 		const matched = service.routes
@@ -34,6 +39,6 @@ export async function ServicePresenceMiddleware(req: Request, res: Response, nex
 			next()
 			return
 		}
-		res.status(404).end()
+		res.status(404).end().send()
 	}
 }
