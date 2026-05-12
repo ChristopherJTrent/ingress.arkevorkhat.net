@@ -1,23 +1,29 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { Optional } from '../common/Optional';
+import { isSubset, or } from '../common/Functional';
+import { STATUS_CODES } from 'http';
+import { constants } from 'http2';
 
 export function ServiceAuthorizationMiddleware(req: Request, res: Response, next: NextFunction): void {
-	let apiKey: Optional<string> = undefined
-	const authHeader = req.header("Authorization")
-	if(authHeader != undefined) {
-		const rxp = /(?:Bearer )([a-zA-Z0-9]{32})/
-		const matchObj = rxp.exec(authHeader)
-		if(matchObj != undefined) {
-			apiKey = matchObj[0]
-		}
-	} else if (req.method in ["POST", "PUT"]){
-		if(req.body != undefined && req.body.APIkey != null) {
-			apiKey = req.body.APIkey
-		}
+	if (req.routeObject == undefined) {
+		next()
+		return
 	}
-	if (apiKey == undefined) {
-		
+	if (req.routeObject.allowAllRequests === true) {
+		req.authorized = true
+		next()
+		return
+	}
+	if (req.user == undefined) {
+		res.status(constants.HTTP_STATUS_UNAUTHORIZED).end().send()
+		return
 	} else {
-		
+		req.authorized = req.routeObject.allowedRoles.filter((v) => or(
+			() => v.fqn in req.user!.roles.map(vv => vv.fqn),
+			() => {
+				const roleSegments = v.fqn.split(".")
+				return req.user!.roles.some((role) => isSubset(roleSegments, role.fqn.split('.')))
+			}
+		)).length > 0
 	}
 }
