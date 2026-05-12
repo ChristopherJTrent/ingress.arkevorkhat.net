@@ -2,7 +2,8 @@ import type { Request, Response, NextFunction } from 'express';
 import type { Optional } from '../common/Optional';
 import { isSubset, or } from '../common/Functional';
 import { STATUS_CODES } from 'http';
-import { constants } from 'http2';
+import { constants as http} from 'http2';
+import { matchRolesByName } from '../common/Authorization';
 
 export function ServiceAuthorizationMiddleware(req: Request, res: Response, next: NextFunction): void {
 	if (req.routeObject == undefined) {
@@ -14,16 +15,16 @@ export function ServiceAuthorizationMiddleware(req: Request, res: Response, next
 		next()
 		return
 	}
-	if (req.user == undefined) {
-		res.status(constants.HTTP_STATUS_UNAUTHORIZED).end().send()
+	if (req.user == undefined || req.apiKeyObject == undefined) {
+		res.status(http.HTTP_STATUS_UNAUTHORIZED).end().send()
 		return
 	} else {
-		req.authorized = req.routeObject.allowedRoles.filter((v) => or(
-			() => v.fqn in req.user!.roles.map(vv => vv.fqn),
-			() => {
-				const roleSegments = v.fqn.split(".")
-				return req.user!.roles.some((role) => isSubset(roleSegments, role.fqn.split('.')))
-			}
-		)).length > 0
+		req.authorized = matchRolesByName( //ensure that the API key was given the scope required
+			req.routeObject.allowedRoles.map(v => v.fqn),
+			req.apiKeyObject.roles.map(v => v.fqn)
+		) && matchRolesByName( //ensure that the user also has the required role
+			req.routeObject.allowedRoles.map((v) => v.fqn),
+			req.user.roles.map((v) => v.fqn)
+		);
 	}
 }
