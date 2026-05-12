@@ -24,7 +24,8 @@ export async function AuthenticationMiddleware(req: Request, res: Response, next
 					include: {
 						roles: true
 					}
-				}
+				},
+				roles: true
 			}
 		}) ?? undefined
 		if (keyObj == undefined) {
@@ -32,6 +33,7 @@ export async function AuthenticationMiddleware(req: Request, res: Response, next
 			next()
 			return
 		}
+		req.apiKeyObject = keyObj
 		req.user = keyObj.owner
 	}
 }
