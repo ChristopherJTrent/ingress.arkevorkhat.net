@@ -1,4 +1,5 @@
-import { Router, json } from 'express';
+import { Router } from 'express';
 
 const router: Router = Router()
-router.use(json)
+
+export {router}
