@@ -2,7 +2,7 @@ import type { Prisma, Route, Service, User } from '../../../generated/prisma/cli
 import type { DefaultPrismaClient } from '../../../generated/prisma/internal/prismaNamespace'
 import type { Optional } from '../../common/Optional'
 
-declare type UserWithRoles = Prisma.UserGetPayload<{include: {roles: true}}>
+declare type UserWithRoles = Prisma.UserGetPayload<{include: {roles: true}, omit: {password_hash: true}}>
 declare type RouteWithRoles = Prisma.RouteGetPayload<{include: {allowedRoles: true}}>
 declare global {
     namespace Express {

@@ -23,6 +23,9 @@ export async function AuthenticationMiddleware(req: Request, res: Response, next
 				owner: {
 					include: {
 						roles: true
+					},
+					omit: {
+						password_hash: true
 					}
 				},
 				roles: true
