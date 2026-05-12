@@ -18,6 +18,7 @@ model Role {
   description String
   routes Route[]
   users User[]
+  apikeys ApiKey[]
 }
 
 model ApiKey {
@@ -25,6 +26,7 @@ model ApiKey {
   keyText String @unique
   created_at DateTime @default(now())
   expires_at DateTime
+  roles Role[]
   owner User @relation(fields: [ownerId], references: [id])
   ownerId Int
 }
