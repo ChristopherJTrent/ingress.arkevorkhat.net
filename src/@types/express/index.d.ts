@@ -8,6 +8,7 @@ declare global {
     namespace Express {
         interface Request {
 			apiKey: Optional<string>,
+			apiKeyObject: Optional<Prisma.ApiKeyGetPayload<{include: {roles: true}}>>,
             serviceName: Optional<string>,
             serviceRequestPath: Optional<string>,
 			routeObject: Optional<RouteWithRoles>,
