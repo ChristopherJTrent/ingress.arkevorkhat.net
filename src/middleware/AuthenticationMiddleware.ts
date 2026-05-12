@@ -1,5 +1,8 @@
 import type { Request, Response, NextFunction } from 'express';
 import { prisma } from '../common/prisma';
+import { getLogger } from '@logtape/logtape';
+
+const logger = getLogger(['ingress.arkevorkhat.net', 'Authentication'])
 
 export async function AuthenticationMiddleware(req: Request, res: Response, next: NextFunction) {
 	const authHeader = req.header("Authorization")
@@ -12,12 +15,15 @@ export async function AuthenticationMiddleware(req: Request, res: Response, next
 	} else if (req.method in ["POST", "PUT"]) {
 		if(req.body != undefined && req.body.APIkey != null) {
 			req.apiKey = req.body.APIkey
+			logger.debug`API key provided as part of request body to ${req.path}`
 		}
+	} else {
+		logger.debug`Authorization not provided on request to ${req.path}`
 	}
 	if (req.apiKey != undefined) {
 		let keyObj = await prisma.apiKey.findFirst({
 			where: {
-				keyText: req.apiKey
+				keyText: req.apiKey,
 			},
 			include: {
 				owner: {
@@ -35,8 +41,18 @@ export async function AuthenticationMiddleware(req: Request, res: Response, next
 			req.apiKey = undefined
 			next()
 			return
+		} else if (keyObj.expires_at < new Date()) {
+			await prisma.apiKey.delete({ where: {
+				id: keyObj.id
+			}})
+			logger.debug`deleted expired API key ${keyObj.keyText} for user ${keyObj.owner.username}`
+			req.apiKeyObject = undefined
+			req.apiKey = undefined
+			req.user = undefined
+		} else {
+			req.apiKeyObject = keyObj
+			req.user = keyObj.owner
 		}
-		req.apiKeyObject = keyObj
-		req.user = keyObj.owner
 	}
+	next()
 }
