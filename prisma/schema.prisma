@@ -26,7 +26,7 @@ model ApiKey {
   keyText String @unique
   created_at DateTime @default(now())
   expires_at DateTime
-  roles Role[]
+  scopes Role[]
   owner User @relation(fields: [ownerId], references: [id])
   ownerId Int
 }
