@@ -1,7 +1,26 @@
 openapi: 3.0.4
 info:
-  title: https://ingress.arkevorkhat.net/admin/v1
+  title: https://ingress.arkevorkhat.net/admin
   version: 0.0.1
+servers:
+  - url: http://localhost:8080/admin
+components:
+  securitySchemes:
+    defaultApiKey:
+      name: Authorization
+      description: API Key provided as a header
+      type: apiKey
+      in: header
+  schemas:
+    Role:
+      type: object
+      properties:
+        name:
+          type: string
+          description: the fully qualified name of the role
+        description:
+          type: string
+          description: a description of the role's intended use case
 paths:
   /roles:
     get:
@@ -15,11 +34,68 @@ paths:
               schema:
                 type: array
                 items:
+                  $ref: "#/components/schemas/Role"
+
+  /roles/create:
+    post:
+      summary: create a role
+      security:
+        - defaultApiKey:
+          - admin
+          - roles.create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fqn:
+                  type: string
+                  description: the Fully Qualified Name of the desired role
+                  example: example.create.entity
+                description:
+                  type: string
+                  description: a description for the role, should be considered public
+      responses:
+        "201":
+          description: role successfully created
+        "409":
+          description: a role with the given fqn already exists.
+  /routes/{serviceName}:
+    get:
+      summary: List All Routes
+      description: Gets a list of all route objects for a given service
+      security:
+        - defaultApiKey:
+          - admin
+          - routes.enumerate
+      parameters:
+        - in: path
+          name: serviceName
+          schema:
+            type: string
+          required: true
+          description: the name of the service
+      responses:
+        "200":
+          description: returns a list of registered routes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
                   type: object
                   properties:
-                    name:
+                    path:
                       type: string
-                      description: the fully qualified name of the role
-                    description:
-                      type: string
-                      description: a description of the role's intended use case
+                      example: "/example/users/128"
+                    allowedRoles:
+                      type: array
+                      items:
+                        $ref: "#/components/schemas/Role"
+                    allowAllRequests:
+                      type: boolean
+                    disabled:
+                      type: boolean
+                      default: false
+      
